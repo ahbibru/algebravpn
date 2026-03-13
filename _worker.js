@@ -844,220 +844,141 @@ function getVLConfig(yourUUID, url) {
  * @param {import("@cloudflare/workers-types").Request} request
  * @returns {Response}
  */
-function getHomePage(request) {
-	const url = request.headers.get('Host');
-	const baseUrl = `https://${url}`;
-	
-	// 检查是否有密码验证
-	const urlObj = new URL(request.url);
-	const providedPassword = urlObj.searchParams.get('password');
-	
-	// 如果提供了密码，验证密码
-	if (providedPassword) {
-		if (providedPassword === password) {
-			// 密码正确，显示主页内容
-			return getMainPageContent(url, baseUrl);
-		} else {
-			// 密码错误，显示错误信息
-			return getLoginPage(url, baseUrl, true);
-		}
-	}
-	
-	// 如果没有提供密码，显示登录页面
-	return getLoginPage(url, baseUrl, false);
-}
-
 /**
- * 获取登录页面
- * @param {string} url 
- * @param {string} baseUrl 
- * @param {boolean} showError 
+ * @param {import("@cloudflare/workers-types").Request} request
  * @returns {Response}
  */
-function getLoginPage(url, baseUrl, showError = false) {
-	const html = `<!DOCTYPE html>
-<html lang="zh-CN">
+function getHomePage(request) {
+    const url = request.headers.get('Host');
+    const baseUrl = `https://${url}`;
+    
+    // Простая HTML-страница с параметрами подключения
+    const html = `<!DOCTYPE html>
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Workers Service - 登录</title>
+    <title>AlgebraVPN</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: Arial, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #333;
+            color: white;
+            min-height: 100vh;
             margin: 0;
-            padding: 0;
-            overflow: hidden;
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
-        
-        .login-container {
-            background: rgba(255, 255, 255, 0.95);
+        .container {
+            max-width: 800px;
+            background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(10px);
             border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            max-width: 400px;
-            width: 95%;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+        h1 {
             text-align: center;
-        }
-        
-        .logo {
-            font-size: 3rem;
-            margin-bottom: 20px;
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        
-        .title {
-            font-size: 1.8rem;
-            margin-bottom: 8px;
-            color: #2d3748;
-        }
-        
-        .subtitle {
-            color: #718096;
             margin-bottom: 30px;
-            font-size: 1rem;
+            font-size: 2.5em;
         }
-        
-        .form-group {
+        .info {
+            background: rgba(255,255,255,0.15);
+            border-radius: 10px;
+            padding: 20px;
             margin-bottom: 20px;
-            text-align: left;
         }
-        
-        .form-label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #4a5568;
+        .info-item {
+            display: flex;
+            margin-bottom: 10px;
+            padding: 8px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
         }
-        
-        .form-input {
-            width: 100%;
-            padding: 12px 16px;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 1rem;
-            transition: border-color 0.3s ease;
-            background: #fff;
+        .label {
+            font-weight: bold;
+            width: 150px;
         }
-        
-        .form-input:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        .value {
+            flex: 1;
+            font-family: monospace;
+            word-break: break-all;
         }
-        
-        .btn-login {
-            width: 100%;
-            padding: 12px 20px;
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
+        .status {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            background: #4ade80;
+            border-radius: 50%;
+            margin-right: 8px;
+            animation: pulse 2s infinite;
         }
-        
-        .btn-login:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
         }
-        
-        .error-message {
-            background: #fed7d7;
-            color: #c53030;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            border-left: 4px solid #e53e3e;
-        }
-        
-        .footer {
+        .note {
+            background: rgba(255,255,255,0.1);
+            border-left: 4px solid #ffd700;
+            padding: 15px;
+            border-radius: 5px;
             margin-top: 20px;
-            color: #718096;
-            font-size: 0.9rem;
-        }
-        
-        @media (max-width: 480px) {
-            .login-container {
-                padding: 30px 20px;
-                margin: 10px;
-            }
-            
-            .logo {
-                font-size: 2.5rem;
-            }
-            
-            .title {
-                font-size: 1.5rem;
-            }
         }
     </style>
 </head>
 <body>
-    <div class="login-container">
-        <div class="logo">🔐</div>
-        <h1 class="title">Workers Service</h1>
-        <p class="subtitle">请输入密码以访问服务</p>
+    <div class="container">
+        <h1>🚀 AlgebraVPN</h1>
         
-        ${showError ? '<div class="error-message">密码错误，请重试</div>' : ''}
-        
-        <form onsubmit="handleLogin(event)">
-            <div class="form-group">
-                <label for="password" class="form-label">密码</label>
-                <input 
-                    type="password" 
-                    id="password" 
-                    name="password" 
-                    class="form-input" 
-                    placeholder="请输入密码"
-                    required
-                    autofocus
-                >
+        <div class="info">
+            <div class="info-item">
+                <span class="label">Статус:</span>
+                <span class="value"><span class="status"></span>Работает</span>
             </div>
-            <button type="submit" class="btn-login">登录</button>
-        </form>
-        
-        <div class="footer">
-            <p>Powered by eooce <a href="https://t.me/eooceu" target="_blank" style="color: #007bff; text-decoration: none;">Join Telegram group</a></p>
+            <div class="info-item">
+                <span class="label">Адрес:</span>
+                <span class="value">${url}</span>
+            </div>
+            <div class="info-item">
+                <span class="label">UUID:</span>
+                <span class="value">${yourUUID}</span>
+            </div>
+            <div class="info-item">
+                <span class="label">Подписка:</span>
+                <span class="value">${baseUrl}/${subPath}</span>
+            </div>
+            <div class="info-item">
+                <span class="label">Пароль:</span>
+                <span class="value">${password}</span>
+            </div>
+        </div>
+
+        <div class="note">
+            <strong>📱 Настройка v2rayTUN:</strong><br><br>
+            <strong>Адрес:</strong> ${url}<br>
+            <strong>Порт:</strong> 443<br>
+            <strong>UUID:</strong> ${yourUUID}<br>
+            <strong>Протокол:</strong> VLESS<br>
+            <strong>Транспорт:</strong> WebSocket<br>
+            <strong>Путь:</strong> /?ed=2560<br>
+            <strong>TLS:</strong> Включен
+        </div>
+
+        <div style="text-align: center; margin-top: 30px; color: rgba(255,255,255,0.8); font-size: 0.9em;">
+            AlgebraVPN для vasilek-dfghjc
         </div>
     </div>
-    
-    <script>
-        function handleLogin(event) {
-            event.preventDefault();
-            const password = document.getElementById('password').value;
-            const currentUrl = new URL(window.location);
-            currentUrl.searchParams.set('password', password);
-            window.location.href = currentUrl.toString();
-        }
-    </script>
 </body>
 </html>`;
 
-	return new Response(html, {
-		status: 200,
-		headers: {
-			'Content-Type': 'text/html;charset=utf-8',
-			'Cache-Control': 'no-cache, no-store, must-revalidate',
-		},
-	});
+    return new Response(html, {
+        status: 200,
+        headers: {
+            'Content-Type': 'text/html;charset=utf-8',
+        },
+    });
 }
 
 /**
